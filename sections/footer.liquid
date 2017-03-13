@@ -4,7 +4,7 @@
       {% if section.settings.footer_newsletter %}
         <h6>{{ 'general.newsletter_form.title' | t }}</h6>
         {% include 'newsletter' %}
-        <p>{{ 'general.newsletter_form.description' | t }}</p>
+        
       {% endif %}
     </div>
 
@@ -46,18 +46,13 @@
 
     <div class="six columns">
       <p class="credits">
-        &copy; {{ "now" | date: "%Y" }} {{ shop.name | link_to: '/' }}.
+        &copy; {{ "now" | date: "%Y" }} 
         {{ section.settings.copyright_text }}
       </p>
     </div>
 
     <div class="ten columns credits_right">
-      <p class="credits">
-        {% if section.settings.display_designed_by == true %}
-          {{ 'layout.general.designer_credits_html' | t }}
-        {% endif %}
-        {{ powered_by_link | split: '" ' | join: '?ref=out-of-the-sandbox" ' | split: '">' | join: '?ref=out-of-the-sandbox">' }}
-      </p>
+      
 
       {% if section.settings.display_payment_methods %}
         <div class="payment_methods">

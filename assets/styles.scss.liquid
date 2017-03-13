@@ -369,8 +369,10 @@ abbr {
 
 /* #Menu
 ================================================== */
+#shopify-section-header { position:absolute; top:0; left:0; width: 100%; z-index: 999; }
 .header {
-  background-color: {{ settings.header_bg_color }};
+  background: none;
+/*  background-color: {{ settings.header_bg_color }};*/
 }
 .header_border {
   border-bottom: solid 1px {{ settings.border_color }};
@@ -413,6 +415,7 @@ abbr {
 }
 .nav ul li a.active, nav ul li a.active:visited, nav ul li a.active:active {
   color: {{ settings.nav_color_active }};
+  border-bottom:1px solid {{ settings.nav_color_active }};
 }
 .nav ul li a:hover, nav ul li a:focus, a.product_collection:hover {
   color: {{ settings.nav_color_hover}};
@@ -2019,7 +2022,8 @@ div#gift-card-outer-container { background-color: #eee; }
     background-color: {{ settings.shop_home_page_bg_color }};
   }
   .headline-section {
-    background-color: {{ settings.shop_home_page_featured_text_bg_color }};
+/*    background-color: {{ settings.shop_home_page_featured_text_bg_color }};*/
+    background-color: #fff;
 
     .action_button {
       line-height: 18px;
