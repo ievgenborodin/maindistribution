@@ -1,0 +1,197 @@
+{% if section.blocks.size > 0 %}
+  {% assign featured_promos_per_row = section.settings.featured_promos_per_row | minus: 0 %}
+  {% assign featured_promos_grid = section.settings.featured_promos_grid %}
+
+  <div class="container promotions-grid-{{featured_promos_grid}}">
+    <div id="js-featured-promotions" class="featured-promotions promo-per-row-{{featured_promos_per_row}} clearfix">
+        {% for block in section.blocks %}
+
+          <figure class="feature-section section-{{ forloop.index }} promo-{{ forloop.index }} title-overlay-{{section.settings.promo_text_on_image_enabled}}" {{ block.shopify_attributes }}>
+            <div class="feature-inner">
+            <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
+              {% if block.settings.image != nil %}
+                <img  data-sizes="auto"
+                      data-src="{{ block.settings.image | img_url: '1024x1024' }}"
+                    {% if featured_promos_per_row == 2 %}
+                      data-srcset=" {{ block.settings.image | img_url: '1160x' }} 1160w,
+                                    {{ block.settings.image | img_url: '728x' }} 728w,
+                                    {{ block.settings.image | img_url: '580x' }} 580w,
+                                    {{ block.settings.image | img_url: '364x' }} 364w"
+                    {% elsif featured_promos_per_row == 3 %}
+                      data-srcset=" {{ block.settings.image | img_url: '760x' }} 760w,
+                                    {{ block.settings.image | img_url: '470x' }} 470w,
+                                    {{ block.settings.image | img_url: '380x' }} 380w,
+                                    {{ block.settings.image | img_url: '235x' }} 235w"
+                    {% elsif featured_promos_per_row == 4 %}
+                      data-srcset=" {{ block.settings.image | img_url: '560x' }} 560w,
+                                    {{ block.settings.image | img_url: '344x' }} 344w,
+                                    {{ block.settings.image | img_url: '280x' }} 280w,
+                                    {{ block.settings.image | img_url: '172x' }} 172w"
+                    {% endif %}
+                    class="lazyload transition-in"
+                    alt="{{ block.settings.title | escape }}" />
+              {% else %}
+                {% capture i %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
+                {{ 'collection-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--promotions' }}
+              {% endif %}
+            </a>
+            {% if section.settings.promo_text_on_image_enabled != blank %}
+              <figcaption class="feature-overlay">
+                <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}class="link-promo"></a>
+                  <div class="feature-wrap">
+                    <div class="feature-details">
+                      {% if block.settings.title != blank %}
+                        <h2 class="title">
+                          <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
+                            {{ block.settings.title }}
+                          </a>
+                        </h2>
+                      {% endif %}
+                      {% if block.settings.text != blank %}
+                        <div class="description">{{ block.settings.text }}</div>
+                      {% endif %}
+                      {% if block.settings.button_label != blank %}
+                        <div class="action_button">{{ block.settings.button_label }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+              </figcaption>
+            {% endif %}
+            </div>
+            {% if section.settings.promo_text_on_image_enabled == blank %}
+              {% if block.settings.title != blank %}
+                <h2 class="title">
+                  <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
+                    {{ block.settings.title }}
+                  </a>
+                </h2>
+              {% endif %}
+              {% if block.settings.text != blank %}
+                <div class="description">{{ block.settings.text }}</div>
+              {% endif %}
+              {% if block.settings.button_label != blank %}
+                <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
+                  <div class="action_button">{{ block.settings.button_label }}</div>
+                </a>
+              {% endif %}
+            {% endif %}
+          </figure>
+        {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Featured promotions",
+  "class": "featured-promotions-section",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "select",
+      "id": "featured_promos_per_row",
+      "label": "Promotions per row",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "featured_promos_grid",
+      "label": "Promotions grid",
+      "options": [
+        {
+          "value": "standard",
+          "label": "Standard"
+        },
+        {
+          "value": "full_width",
+          "label": "Full width"
+        }
+      ],
+      "default": "full_width"
+    },
+    {
+      "type": "checkbox",
+      "id": "promo_text_on_image_enabled",
+      "label": "Show text on hover",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Promotion",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "840 x 840px recommended"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Header",
+          "default": "Feature"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        }
+      ]
+    }
+  ],
+  "presets": [{
+    "name": "Featured promotions",
+    "category": "Image",
+    "settings": {
+      "featured_promos_per_row": "3",
+      "featured_promos_grid": "full_width"
+    },
+    "blocks": [
+      {
+        "type": "image",
+        "settings": {
+
+        }
+      },
+      {
+        "type": "image",
+        "settings": {
+
+        }
+      },
+      {
+        "type": "image",
+        "settings": {
+
+        }
+      }
+    ]
+  }]
+}
+{% endschema %}

@@ -1,0 +1,320 @@
+{% if section.settings.announcement_message != blank %}
+  <div class="promo_banner js-promo_banner">
+    {% if section.settings.announcement_link %}
+      <a href="{{ section.settings.announcement_link }}">
+        {{ section.settings.announcement_message }}
+      </a>
+    {% else %}
+      {{ section.settings.announcement_message }}
+    {% endif %}
+    <div class="promo_banner-close"></div>
+  </div>
+{% endif %}
+
+<div class="header {% unless template contains "index" %}header_border{% else %}homepage{% endunless %}">
+  <div class="container content">
+    <div class="sixteen columns">
+    <div class="four columns logo header-logo alpha">
+      <a href="{{ shop.url }}" title="{{ shop.name }}">
+        {% if section.settings.logo != nil %}
+          <img src="{{ section.settings.logo | img_url: '280x', scale: 2 }}" alt="{{ shop.name }}" />
+        {% else %}
+          {{ shop.name }}
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="twelve nav omega">
+      <div class="mobile_hidden mobile_menu_container">
+        <ul class="top_menu {% if settings.display_search_box %}search_nav{% endif %}">
+          {% if section.settings.phone_number != blank %}
+            <li><a href="tel:+{{ section.settings.phone_number | replace: ' ', '' | replace: '+', '' | replace: '-', '' }}">{{ section.settings.phone_number }}</a></li>
+          {% endif %}
+          {% if section.settings.header_social_icons %}
+            <li>
+              {% include 'social-icons' %}
+            </li>
+          {% endif %}
+          {% if section.settings.top_bar_linklist != blank %}
+            {% for link in linklists[section.settings.top_bar_linklist].links %}
+              <li>
+                <a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+          {% if shop.customer_accounts_enabled %}
+            {% if customer %}
+              <li>
+                <a href="/account">{{ customer.name }}</a>
+              </li>
+              <li>
+                {{ 'layout.customer.log_out' | t | customer_logout_link }}
+              </li>
+            {% else %}
+              <li>
+                {{ 'layout.customer.log_in' | t | customer_login_link }}
+              </li>
+            {% endif %}
+          {% endif %}
+          {% if settings.show_multiple_currencies %}
+            <li>
+              {% include 'currencies-switcher' %}
+            </li>
+          {% endif %}
+          {% if section.settings.display_search_box %}
+            <li>
+              <form class="search" action="/search">
+                {% if settings.search_option != "everything" %}
+                  <input type="hidden" name="type" value="product" />
+                {% endif %}
+                <input type="text" name="q" class="search_box" placeholder="{{ 'general.search.placeholder' | t }}" value="{% if search and search.results.first.price %}{{ search.terms }}{% endif %}" autocapitalize="off" autocomplete="off" autocorrect="off" />
+              </form>
+            </li>
+          {% endif %}
+        </ul>
+        <ul class="main menu">
+          {% for link in linklists[section.settings.main_linklist].links %}
+            {% if linklists[link.handle] == empty %}
+              <li><a href="{{ link.url }}" {% if link.active %}class="active"{% endif %}>{{ link.title }}</a></li>
+            {% else %}
+              <li class="dropdown"><a href="{{ link.url }}" {% if link.active %}class="active"{% endif %} {% for link in linklists[link.handle].links %}{% if link.active %}class="active"{% endif %}{% endfor %}>{{ link.title }} <span class="icon-arrow-down"></span></a>
+                <ul>
+                  {% for link in linklists[link.handle].links %}
+                    {% if linklists[link.handle] == empty %}
+                      <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                    {% else %}
+                    <li><a href="{{ link.url }}">{{ link.title }} <span class="icon-arrow-right"></span></a>
+                      <ul>
+                        {% for link in linklists[link.handle].links %}
+                          <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      <ul class="nav_buttons menu">
+        <li class="navicon_button">
+          <a href="#" class="navicon" title="{{ 'layout.general.menu' | t }}"><span class="icon-menu"></span><span class="button_label">{{ 'layout.general.menu' | t }}</span></a>
+        </li>
+        <li>
+          <a href="/cart" class="cart_button {% if cart.item_count > 0 %}active{% endif %}" title="{{ 'layout.general.cart' | t }}"><span class="{% if section.settings.cart_icon == "cart" %}icon-cart{% else %}icon-bag{% endif %}"></span><span class="button_label">{{ 'layout.general.cart' | t }}</span>{% if cart.item_count > 0 %}<span class="cart_count"> ({{ cart.item_count }})</span>{% endif %}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toggle_menu nav">
+  <ul class="mobile_menu">
+    <li>
+      <form class="search" action="/search">
+        {% if section.settings.search_option != 'everything' %}
+          <input type="hidden" name="type" value="product" />
+        {% endif %}
+        <input type="text" name="q" class="search_box" placeholder="{{ 'general.search.placeholder' | t }}" value="{% if search and search.results.first.price %}{{ search.terms }}{% endif %}" />
+      </form>
+    </li>
+    {% for link in linklists[section.settings.main_linklist].links %}
+      {% if linklists[link.handle] == empty %}
+        <li {% if link.active %}class="active"{% endif %}><a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a></li>
+      {% else %}
+        <li {% if link.active %}class="active"{% endif %}><a href="{{ link.url }}" title="{{ link.title }}" class="toggle"><span>+</span>{{ link.title }}</a>
+          <ul>
+            {% for link in linklists[link.handle].links %}
+              {% if linklists[link.handle] == empty %}
+                <li {% if link.active %}class="active"{% endif %}><a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a></li>
+              {% else %}
+              <li {% if link.active %}class="active"{% endif %}><a href="{{ link.url }}" title="{{ link.title }}" class="toggle"><span>+</span>{{ link.title }}</a>
+                <ul>
+                  {% for link in linklists[link.handle].links %}
+                    <li {% if link.active %}class="active"{% endif %}><a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a></li>
+                  {% endfor %}
+                </ul>
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </li>
+      {% endif %}
+    {% endfor %}
+    {% if section.settings.top_bar_linklist != blank %}
+      {% for link in linklists[section.settings.top_bar_linklist].links %}
+        <li>
+          <a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a>
+        </li>
+      {% endfor %}
+    {% endif %}
+    {% if shop.customer_accounts_enabled %}
+      {% if customer %}
+        <li>
+          <a href="/account">{{ customer.name }}</a>
+        </li>
+        <li>
+          {{ 'layout.customer.log_out' | t | customer_logout_link }}
+        </li>
+      {% else %}
+        <li>
+          {{ 'layout.customer.log_in' | t | customer_login_link }}
+        </li>
+      {% endif %}
+    {% endif %}
+    <li class="currency-container">
+      {% if settings.show_multiple_currencies %}
+        {% include 'currencies-switcher' with 'inline' %}
+      {% endif %}
+    </li>
+  </ul>
+</div>
+<div class="fixed_header"></div>
+
+<style>
+  .header-logo.logo a {
+    max-width: {{ section.settings.logo_width }}px;
+    padding-top: {{ section.settings.logo_top_padding }}px;
+  }
+
+  ul.top_menu {
+    padding-top: {{ section.settings.menu_top_padding }}px;
+  }
+
+</style>
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "header-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "560px wide recommended"
+    },
+    {
+      "type": "text",
+      "id": "logo_width",
+      "label": "Logo display width",
+      "info": "Maximum display width is 280 pixels",
+      "default": "280"
+    },
+    {
+      "type": "select",
+      "id": "cart_icon",
+      "label": "Cart icon",
+      "options": [
+        {
+          "value": "cart",
+          "label": "Cart"
+        },
+        {
+          "value": "bag",
+          "label": "Bag"
+        }
+      ],
+      "default": "cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "display_search_box",
+      "label": "Enable search box"
+    },
+    {
+      "type": "link_list",
+      "id": "main_linklist",
+      "label": "Main menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "link_list",
+      "id": "top_bar_linklist",
+      "label": "Top menu"
+    },
+    {
+      "type": "text",
+      "id": "phone_number",
+      "label": "Phone number",
+      "info": "1-800-555-5555"
+    },
+    {
+      "type": "checkbox",
+      "id": "header_social_icons",
+      "label": "Show social media icons"
+    },
+    {
+      "type": "select",
+      "id": "logo_top_padding",
+      "label": "Logo top padding (in pixels) ([?](http:\/\/support.outofthesandbox.com\/customer\/portal\/articles\/1339268))",
+      "options": [
+        {"value": "0", "label": "0"},
+        {"value": "1", "label": "1"},
+        {"value": "2", "label": "2"},
+        {"value": "3", "label": "3"},
+        {"value": "4", "label": "4"},
+        {"value": "5", "label": "5"},
+        {"value": "6", "label": "6"},
+        {"value": "7", "label": "7"},
+        {"value": "8", "label": "8"},
+        {"value": "9", "label": "9"},
+        {"value": "10", "label": "10"},
+        {"value": "11", "label": "11"},
+        {"value": "12", "label": "12"},
+        {"value": "13", "label": "13"},
+        {"value": "14", "label": "14"},
+        {"value": "15", "label": "15"},
+        {"value": "16", "label": "16"},
+        {"value": "17", "label": "17"},
+        {"value": "18", "label": "18"},
+        {"value": "19", "label": "19"},
+        {"value": "20", "label": "20"}
+      ],
+      "default": "0"
+    },
+ {
+      "type": "select",
+      "id": "menu_top_padding",
+      "label": "Navigation top padding (in pixels) ([?](http:\/\/support.outofthesandbox.com\/customer\/portal\/articles\/1339268))",
+      "options": [
+        {"value": "0", "label": "0"},
+        {"value": "1", "label": "1"},
+        {"value": "2", "label": "2"},
+        {"value": "3", "label": "3"},
+        {"value": "4", "label": "4"},
+        {"value": "5", "label": "5"},
+        {"value": "6", "label": "6"},
+        {"value": "7", "label": "7"},
+        {"value": "8", "label": "8"},
+        {"value": "9", "label": "9"},
+        {"value": "10", "label": "10"},
+        {"value": "11", "label": "11"},
+        {"value": "12", "label": "12"},
+        {"value": "13", "label": "13"},
+        {"value": "14", "label": "14"},
+        {"value": "15", "label": "15"},
+        {"value": "16", "label": "16"},
+        {"value": "17", "label": "17"},
+        {"value": "18", "label": "18"},
+        {"value": "19", "label": "19"},
+        {"value": "20", "label": "20"}
+      ],
+      "default": "0"
+    },
+    {
+      "type": "richtext",
+      "id": "announcement_message",
+      "label": "Announcement message"
+    },
+    {
+      "type": "url",
+      "id": "announcement_link",
+      "label": "Announcement link (optional)"
+    }
+  ]
+}
+{% endschema %}

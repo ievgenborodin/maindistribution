@@ -1,0 +1,46 @@
+{% assign featured_image = product.selected_or_first_available_variant.featured_image | default: product.featured_image %}
+<div class="flexslider product_gallery product-{{ product.id }}-gallery {% if product-images == blank %}product_slider{% endif %} {% if settings.product_thumbs == false %}animated fadeInUp{% endif %}">
+  <ul class="slides">
+    {% for image in product.images %}
+      <li data-thumb="{{ image | product_img_url: '580x', scale: 2 }}" data-title="{% if image.alt contains 'youtube' or image.alt contains 'vimeo' %}{{ product.title }}{% else %}{{ image.alt | escape }}{% endif %}">
+        {% if image.alt contains 'youtube' or image.alt contains 'vimeo' %}
+          {% assign src = image.alt | split: 'src="' %}
+          {% assign src = src[1] | split: '"' | first %}
+
+          {% if src contains '?' %}
+            {% assign src = src | append: '&amp;autoplay=1' %}
+          {% else %}
+            {% assign src = src | append: '?autoplay=1' %}
+          {% endif %}
+
+          <div class="video-container {% if image.alt contains 'vimeo' %}vimeo{% else %}youtube{% endif %}">
+            <div>
+              <a href="{{ src }}" class="fancybox fancybox.iframe" data-fancybox-group="{{ product.id }}">
+                {{ image.alt }}
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <a href="{{ image | product_img_url: '2048x', scale: 2 }}" class="fancybox" data-fancybox-group="{{ product.id }}">
+          <img  src="{{ image | product_img_url: '100x' }}"
+                alt="{{ image.alt | escape }}"
+                class=" lazyload transition-in cloudzoom {% if featured_image.id == image.id %}featured_image{% endif %}"
+                data-cloudzoom="zoomImage: '{{ image | product_img_url: '2048x' }}', tintColor: '{{ settings.shop_bg_color }}', autoInside: 767, {% if section.settings.product_images_position == 'right' or position == 'right' %}zoomPosition: 13,{% endif %} zoomWidth: 460, zoomHeight: 460, touchStartDelay: 250"
+                data-index="{{ forloop.index0 }}"
+                data-image-id="{{ image.id }}"
+                data-sizes="auto"
+                data-src="{{ image | product_img_url: '2000x' }}"
+                data-srcset=" {{ image | product_img_url: '200x' }} 200w,
+                              {{ image | product_img_url: '400x' }} 400w,
+                              {{ image | product_img_url: '600x' }} 600w,
+                              {{ image | product_img_url: '800x' }} 800w,
+                              {{ image | product_img_url: '1200x' }} 1200w,
+                              {{ image | product_img_url: '2000x' }} 2000w"
+                 />
+          </a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+&nbsp;
