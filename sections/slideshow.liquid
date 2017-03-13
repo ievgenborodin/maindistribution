@@ -1,58 +1,691 @@
-{% if section.blocks.size > 0 %}
-  <div {% if section.settings.slideshow_stretch == false %}class="container"{% endif %}>
-    <div  class="flexslider homepage_slider"
-          data-slider-id="homepage_slider-{{section.id}}"
-          data-slideshow-animation="{{section.settings.slideshow_animation}}"
-          data-slideshow-speed="{{section.settings.slideshow_speed}}"
-          data-slideshow-text-animation="{{section.settings.slideshow_text_animation}}">
-      <ul class="slides">
-        {% for block in section.blocks %}
+<script>var duration = 400;
+var visible_popup = '';
+var document_scroll;
+var card_titles = [
+    'Свято літа'
+    ,'День директора'
+    ,'Свято п\'ятниці'
+    ,'Понеділкове свято'
+    ,'Свято улюбленої роботи'
+    ,'День яблука'
+    ,'День наймолодшого колеги'
+    ,'День найдосвідченішого'
+    ,'Дівоче свято'
+    ,'Дружнє свято'
+];
+var card_desc = [
+    'Таке можна святкувати хоч щодня з червня до серпня! Чудовий теплий привід.'
+    ,'Бувають звичайні директори, а бувають такі, як у нас – не директор, а свято!'
+    ,'Святкується щотижня, а із сидром стає ще легшим, приємнішим та веселішим.'
+    ,'Свято для тих, хто не хоче погоджуватись, що понеділок – важкий день.'
+    ,'Святкуємо те, як ми любимо роботу та одне одного. Лише для щирих!'
+    ,'Свято для тих, хто любить сидр та поважає яблука, з яких його роблять.'
+    ,'Все просто – ми влаштовуємо свято на честь наймолодшого з нас! З подарунками.'
+    ,'Це свято для того, хто працює у нас найдовше. Будемо переймати досвід!'
+    ,'Таке б щодня святкувати! І ми готові. Збираємось порадіти з нашими дівчатами!'
+    ,'Коли в команді є надійне дружнє плече, працювати – просто!'
+];
+var act_bottle = 0;
 
-          <li {{ block.shopify_attributes }} data-block-id="{{block.id}}">
-            <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
-            {% if block.settings.image %}
-              <img  src="{{ block.settings.image | img_url: '1200x' }}"
-                    alt="{{ block.settings.image.alt | escape }}"
-                    class="lazyload transition-in"
-                    sizes="100vw"
-                    srcset="{{ block.settings.image | img_url: '480x' }} 480w,
-                            {{ block.settings.image | img_url: '768x' }} 768w,
-                            {{ block.settings.image | img_url: '1200x' }} 1200w,
-                            {{ block.settings.image | img_url: '2048x2048' }} 2048w"
-                     />
-            {% else %}
-              {% capture i %}{% cycle "1", "2" %}{% endcapture %}
-              {{ 'lifestyle-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--slideshow' }}
-            {% endif %}
-            </a>
-            {% if block.settings.title != blank or block.settings.subtitle != blank or block.settings.image_button_label != blank %}
-              <div class="flex-caption homepage_slider__flex-caption">
-                <div class="container text-animation--{{section.settings.slideshow_text_animation}}">
-                  <div class="columns {% if block.settings.text_position == 'left' %} eight offset-by-one {% elsif block.settings.text_position == 'right' %} seven offset-by-eight {% else %} ten offset-by-three {% endif %} align_{{ block.settings.text_align }}">
-                    {% if forloop.first == true %}
-                      <h1 class="headline">
-                        {{ block.settings.title }}
-                      </h1>
-                    {% else %}
-                      <p class="headline">
-                        {{ block.settings.title }}
-                      </p>
-                    {% endif %}
-                    <p class="subtitle">{{ block.settings.subtitle }}</p>
-                    {% if block.settings.image_button_label != blank %}
-                      <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} class="action_button">
-                        {{ block.settings.image_button_label }}
-                      </a>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+
+var current_page = 1;
+function getHolidays(route){
+    current_page++;
+    $.post(route+'/', {page: current_page, date: $('.participants_period input').val()}, function(result) {
+        if (result.length > 0){
+            $('.card_list').html($('.card_list').html()+result);
+        }else{
+            $('.more_cards').addClass('none');
+        }
+
+    });
+
+}
+
+function trim(string){
+    return string.replace(/(^\s+)|(\s+$)/g, "");
+}
+
+function textareaMaxLength(){
+    var txts = document.getElementsByTagName('TEXTAREA');
+
+    for(var i = 0, l = txts.length; i < l; i++) {
+        if(/^[0-9]+$/.test(txts[i].getAttribute("maxlength"))) {
+            var func = function() {
+                var len = parseInt(this.getAttribute("maxlength"), 10);
+
+                if(this.value.length > len) {
+//                    alert('Maximum length exceeded: ' + len);
+                    this.value = this.value.substr(0, len);
+                    return false;
+                }
+            }
+
+            txts[i].onkeyup = func;
+            txts[i].onblur = func;
+        }
+    }
+}
+
+function setAutoRemove( element, def_val ) {
+    if (!$(element)) return false;
+
+    $(element).focus(function() {
+        if ($(this).val() == def_val) {
+            $(this).val('');
+            $(element).removeClass('default');
+        }
+    });
+    $(element).blur(function() {
+        if (trim($(this).val()) == '') {
+            $(this).val(def_val);
+            $(element).addClass('default');
+        }
+    });
+    if ($(element).val() == '') {
+        $(element).val(def_val);
+        $(element).addClass('default');
+    }
+    return $(element);
+}
+
+function initPopup(popup){
+    var close       = popup.find('.close');
+    close.click(hidePopup);
+    $('#back').hide().removeClass('none').click(hidePopup);
+
+    popup.hide();
+}
+function hidePopup(){
+    $('#back').fadeOut();
+    // popup with video
+    $('.popup.act').fadeOut(duration, function(){
+        $('.popup_table').addClass('hide');
+        $('.popup.act').removeClass('act');
+        $('.wrapper').removeClass('wrapper_popup').css('top','auto');
+        $('body').removeClass('body_scroll');
+        $(window).scrollTop(document_scroll);
+        if( $('#video').length ) {
+            $('#video').removeAttr('src');
+        }
+    });
+}
+
+var revision = 1;
+function getNewCaptcha(){
+    $('.popup_code .captcha').html('<img src="holiday/captcha/?'+revision+'" alt=""/>');
+    revision++;
+}
+
+function _trackEvent(category, action){
+    if(undefined != window._gaq){
+        _gaq.push(['_trackEvent', category, action]);
+    }
+}
+
+function showPopup(popup){
+
+    if ( $(popup).hasClass('act') ) return false;
+
+    // popup with video
+    if( $(popup).hasClass('popup_video') ) {
+        $('#video').attr('src',$('#video').data('src'));
+    }
+
+    if( $('.popup_table').hasClass('hide') ){
+        // no visible popup
+        document_scroll = $(window).scrollTop();
+        $('body').addClass('body_scroll');
+        $('.wrapper').addClass('wrapper_popup');
+        $('.wrapper').css('top',-document_scroll);
+        $('.popup_table').removeClass('hide');
+        $(popup).fadeIn(duration);
+        $('#back').fadeIn(duration);
+    } else {
+        // we have active popup
+        $('.popup.act').fadeOut(duration, function(){
+            $(popup).fadeIn(duration);
+        });
+        $('.popup.act').removeClass('act');
+    }
+
+    $(popup).addClass('act');
+
+}
+
+function initSelectJS(select){
+
+    var input = select.find('input');
+    var active = input.val() || 1; // requires id data-val of element
+    var val = select.find('.sel_val span');
+    var opnts = select.find('.sel_optn');
+    opnts.removeClass('act');
+    opnts.each(function(index, item){
+        if( $(item).data('val') == active )  {
+            $(item).addClass('act');
+            val.text($(item).text());
+        }
+    });
+
+
+    select.click(function(evt){
+        if( $(evt.target).hasClass('sel_optn') ){
+            $(input).val($(evt.target).data('val'));
+            opnts.removeClass('act');
+            $(evt.target).addClass('act');
+            val.text($(evt.target).text())
+        }
+
+        if( $(this).hasClass('act') ) $(this).removeClass('act')
+        else $(this).addClass('act')
+
+    });
+
+}
+function documentCloseSelect(){
+    $(document).bind('click',function(e){
+        if (!$(e.target).hasClass('select_js') && !$(e.target).closest('.select_js').length){
+            $('.select_js').removeClass('act');
+        }
+    });
+}
+
+function checkGates(age){
+    if( age === true ){
+        $('.gates').addClass('none');
+        $('.wrapper_gates').removeClass('wrapper_gates');
+        return false;
+    }
+
+    if( $(this).hasClass('yes') ){
+        $.cookie('user_adult', 'true', {expires: 10,path: '/'});
+        $('.gates .logo').css({
+            position:'fixed',
+            top:$('.gates .logo').offset().top-$(window).scrollTop(),
+            left:$('.gates .logo').offset().left-$(window).scrollLeft(),
+            margin:0
+        })
+        $('.gates').prepend($('.gates .logo'));
+        $('.gates .logo').animate({top:24},duration);
+        $('.gates .gates_box').fadeOut(duration/2);
+        $('.gates .warning').fadeOut(duration,function(){
+            $('.wrapper_gates').hide().removeClass('wrapper_gates').fadeIn(duration,function(){$('.gates').hide()});
+        });
+    } else {
+        $('.gates1').animate({
+            opacity:'toggle',
+            height:'toggle'
+        },duration);
+        setTimeout(function(){
+            $('.gates2').animate({
+                opacity:'toggle',
+                height:'toggle'
+            },duration);
+        },20);
+    }
+}
+
+function initProductSlider(slider){
+    var act = 0;
+    var arr_l = slider.find('.arrow.left');
+    var arr_r = slider.find('.arrow.right');
+    var toggle = slider.find('.toggle');
+    var items = slider.find('.slider_item');
+    var _width = $(items[0]).outerWidth();
+    var margin_middle = parseInt($(items[0]).css('margin-left'));
+    if(items.length <= 1){
+        arr_l.remove();
+        arr_r.remove();
+        toggle.remove();
+        return false;
+    }
+    toggle.removeClass('act').addClass('none');
+    $(toggle[act]).addClass('act');
+
+    $(items).each(function(index, item){
+        if( index == act ) {
+            $(item).show();
+        } else {
+            $(item).hide();
+        }
+        $(toggle[index]).removeClass('none');
+    });
+
+
+    var sliderEvent = function(){
+        removeSliderEvent();
+        if( $(this).hasClass('act') ) return false;
+        var next = act;
+        var _margin_start = -_width*3/2;
+        var _margin_end = _width/2;
+
+        if( $(this).hasClass('left') ){
+            next = (act-1<0)?items.length-1:act-1;
+
+        } else if( $(this).hasClass('toggle') ){
+            var index = toggle.index(this);
+            if( index > next ) {
+                _margin_start = _width/2;
+                _margin_end = -_width*3/2;
+            }
+            next = index;
+        } else {
+            next = (act+1>items.length-1)?0:act+1;
+            _margin_start = _width/2;
+            _margin_end = -_width*3/2;
+        }
+
+        $(items[act]).animate({marginLeft:_margin_end,opacity:'toggle'},duration);
+        $(toggle[act]).removeClass('act');
+        act = next;
+        $(items[act]).css({marginLeft:_margin_start})
+            .animate({marginLeft:margin_middle,opacity:'toggle'},duration,addSliderEvent);
+        $(toggle[act]).addClass('act');
+    };
+    var addSliderEvent = function(){
+        arr_l.bind('click',sliderEvent);
+        arr_r.bind('click',sliderEvent);
+        toggle.bind('click',sliderEvent);
+    };
+    var removeSliderEvent = function(){
+        arr_l.unbind('click',sliderEvent);
+        arr_r.unbind('click',sliderEvent);
+        toggle.unbind('click',sliderEvent);
+    };
+
+    addSliderEvent();
+}
+
+function initProductInnerSlider(slider){
+    var act = 0;
+    duration = 400;
+    var arr_l = $(slider).find('.arrows.left');
+    var arr_r = $(slider).find('.arrows.right');
+    var items = $(slider).find('.slider_item');
+    var imgs = $(slider).find('.item_img');
+    var info = $(slider).find('.item_info');
+    var bottle1 = $(slider).find('.bottle1');
+    var bottle2 = $(slider).find('.bottle2');
+    var bottle3 = $(slider).find('.bottle3');
+    var delta = 300;
+    var styles = {
+        img : parseInt($(imgs[0]).css('left')),
+        info : parseInt($(info[0]).css('left')),
+        bottle1 : parseInt($(bottle1[0]).css('left')),
+        bottle2 : parseInt($(bottle2[0]).css('left')),
+        bottle3 : parseInt($(bottle3[0]).css('left'))
+    }
+
+    $(items).each(function(index, item){
+       if(index != act){
+           $(imgs[index]).hide();
+           $(info[index]).hide();
+           $(bottle1[index]).hide();
+           $(bottle2[index]).hide();
+           $(bottle3[index]).hide();
+           $(item).removeClass('none');
+       }
+    });
+
+    if( $(items).length <= 1 ){
+        $(arr_l).remove();
+        $(arr_r).remove();
+        return false;
+    }
+
+    var eventSlider = function(){
+        removeEventSlider();
+        var next = (act+1>items.length-1)?0:act+1;
+
+        var left = delta;
+
+        if( $(this).hasClass('left') ){
+            next = (act-1<0)?items.length-1:act-1;
+        } else {
+            left = -left;
+        }
+
+        $(imgs[act]).animate({opacity:'toggle'},duration);
+        $(info[act]).animate({opacity:'toggle'},duration);
+        $(bottle1[act]).animate({opacity:'toggle'},duration);
+        $(bottle2[act]).animate({opacity:'toggle'},duration);
+        $(bottle3[act]).animate({opacity:'toggle'},duration);
+
+        act = next;
+        $(imgs[act]).css({left:styles.img-left}).animate({left:styles.img,opacity:'toggle'},duration*2,'easeOutBack',addEventSlider);
+        $(info[act]).css({left:styles.info-left}).delay(duration).animate({left:styles.info,opacity:'toggle'},duration);
+        $(bottle1[act]).css({left:styles.bottle1-left}).delay(duration).animate({left:styles.bottle1,opacity:'toggle'},duration);
+        $(bottle2[act]).css({left:styles.bottle2-left}).delay(duration+100).animate({left:styles.bottle2,opacity:'toggle'},duration);
+        $(bottle3[act]).css({left:styles.bottle3-left}).delay(duration+200).animate({left:styles.bottle3,opacity:'toggle'},duration);
+    };
+
+    var addEventSlider = function(){
+        $(arr_l).bind('click',eventSlider);
+        $(arr_r).bind('click',eventSlider);
+    };
+    var removeEventSlider = function(){
+        $(arr_l).unbind('click',eventSlider);
+        $(arr_r).unbind('click',eventSlider);
+    };
+
+    addEventSlider();
+}
+
+function initCardSlider(act){
+    act_bottle = (act == undefined)? 0: act;
+    var arr_l = $('.card_arrow.left');
+    var arr_r = $('.card_arrow.right');
+    var card_bg = $('.card_bg');
+    var card_bottle_img = $('.card_bottle_img');
+    var title = $('.card_bottle .title');
+    var random_btn = $('#choose-random');
+    random_btn.click(function(e){e.preventDefault()});
+
+    card_bg.removeClass('none').hide();
+    card_bottle_img.removeClass('none').hide();
+    $(card_bg[act_bottle]).show();
+    $(card_bottle_img[act_bottle]).show();
+
+    if( card_bottle_img.length <= 1 ){
+        arr_l.remove();
+        arr_r.remove();
+    }
+
+    var sliderEvent = function(){
+        removeSliderEvent();
+        $(card_bg[act_bottle]).fadeOut(duration);
+
+        if( $(this).hasClass('left') ){
+            $(card_bottle_img[act_bottle]).animate({
+                opacity:'toggle',
+                marginLeft:'+=50px'
+            },duration,'easeOutExpo');
+            act_bottle = parseInt(act_bottle);
+            act_bottle = ( act_bottle-1 < 0 )?card_bottle_img.length-1:act_bottle-1;
+            $(card_bottle_img[act_bottle]).css('marginLeft',-97).animate({
+                opacity:'toggle',
+                marginLeft: -47
+            },duration,'easeOutExpo');
+        } else if( $(this).attr('id') == 'choose-random' ){
+
+            $('.card_fieldset textarea').removeClass('default_title');
+            // generate random index of bottles
+            var array = [];
+            for(var i=0;i<card_bottle_img.length;i++){
+                if( i != act_bottle )
+                array.push(i);
+            }
+            var rand = array[Math.floor(Math.random() * array.length)];
+
+            // random title and description
+            var i = Math.floor(Math.random() * card_titles.length);
+            var rand_title = card_titles[i];
+            var rand_description = card_desc[i];
+
+            // make animation
+            $(card_bottle_img[act_bottle]).animate({
+                opacity:'toggle',
+                marginLeft:'+=50px'
+            },duration,'easeOutExpo');
+
+            act_bottle = rand;
+
+            $(card_bottle_img[act_bottle]).css('marginLeft',-97).animate({
+                opacity:'toggle',
+                marginLeft: -47
+            },duration,'easeOutExpo');
+
+            // update title and description
+            $('.card.edit .card_fieldset').removeClass('error');
+
+            $('.card.edit .card_fieldset .title span').text(rand_title).removeClass('default_title');
+            $('.card.edit .card_fieldset .description span').text(rand_description).removeClass('default_title');
+            $('.card.edit .title_symbols span').text($('.card.edit .card_fieldset .title textarea').attr('maxlength')-rand_title.length);
+            $('.card.edit .description_symbols span').text($('.card.edit .card_fieldset .description textarea').attr('maxlength')-rand_title.length);
+
+        } else {
+            $(card_bottle_img[act_bottle]).animate({
+                opacity:'toggle',
+                marginLeft:'-=50px'
+            },duration,'easeOutExpo');
+            act_bottle = parseInt(act_bottle);
+            act_bottle = ( act_bottle+1 > card_bottle_img.length-1 )?0:act_bottle+1;
+            $(card_bottle_img[act_bottle]).css('marginLeft',3).animate({
+                opacity:'toggle',
+                marginLeft: -47
+            },duration,'easeOutExpo');
+        }
+
+        $(card_bg[act_bottle]).fadeIn(duration,addSliderEvent);
+        // update bottle title
+        title.html($(card_bottle_img[act_bottle]).data('title'));
+    };
+    var addSliderEvent = function(){
+        arr_l.bind('click',sliderEvent);
+        arr_r.bind('click',sliderEvent);
+        random_btn.bind('click',sliderEvent);
+    };
+    var removeSliderEvent = function(){
+        arr_l.unbind('click',sliderEvent);
+        arr_r.unbind('click',sliderEvent);
+        random_btn.unbind('click',sliderEvent);
+    };
+
+    addSliderEvent();
+}
+
+$(document).ready(function() {
+    // add max length function for textareas
+    textareaMaxLength();
+
+    // init popups
+    if( $('.popup').length ){
+        $('.popup').each(function(index, item){
+            initPopup($(item));
+        });
+
+        if( visible_popup.length ){
+            showPopup($('.'+visible_popup));
+        }
+    }
+
+    // gates controls
+    if( $('.gates').length ){
+        $('.yes').click(checkGates);
+        $('.no').click(checkGates);
+        $('.gates2').removeClass('none').animate({
+            opacity:'toggle',
+            height:'toggle'
+        },0);
+    }
+
+    // init select js
+    if( $('.select_js').length ){
+        $('.select_js').each(function(index, item){
+            initSelectJS($(item));
+        });
+        documentCloseSelect();
+    }
+
+    // product slider
+    if( $('.product_slider').length ){
+        initProductSlider($('.product_slider'));
+    }
+
+    if ($('#where-to-buy-city').length) {
+        $('#where-to-buy-city .sel_optn').click(function(){
+            window.location.href = '/where-to-buy/'+$(this).data('val') + ($('#where-to-buy-city').hasClass('has_map') ? '/map/' : '/');
+        });
+    }
+
+    if( $('#product-slider-inner').length ){
+        initProductInnerSlider($('#product-slider-inner'));
+    }
+
+
+
+});
+
+
+</script>
+
+<style>
+/* ICON
+-----------------------------------------------------------------------------*/
+.icon{
+    display: inline-block;
+    *display: inline;
+    *zoom:1;
+    vertical-align: top;
+    background: url({{ 'sprite.png' | asset_url }}) no-repeat 0 0;
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
+    position: relative;
+}
+.email_link{
+    background-position: 0 0;
+    width: 42px;
+    height: 28px;
+    margin-left: 15px;
+}
+a.email_link:hover{background-position: 0 -32px}
+.i_plus{
+    background-position: 0 -165px;
+    width: 25px;
+    height: 25px;
+}
+.arrow{
+    width: 25px;
+    height: 47px;
+    cursor: pointer;
+}
+.arrow.left{background-position: 0 -63px}
+.arrow.left:hover{background-position: 0 -113px}
+.arrow.right{background-position: -35px -63px}
+.arrow.right:hover{background-position: -35px -113px}
+
+.product_slider{
+   margin: 42px 0 0;
+   text-align: left;
+   background: #fcfae7 ;
+   overflow: hidden;
+   position: relative;
+   z-index: 1;
+}
+.product_slider .slider_holder{
+   overflow: hidden;
+   position: relative;
+   z-index: 1;
+   /*width: 864px;*/
+   width: 100%;
+   margin: auto;
+   height: 550px;
+}
+.product_slider .arrow{
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   margin: -24px 500px;
+   z-index: 10
+}
+.product_slider .arrow.left{right: 50%;left: auto;}
+.product_slider .slider_item{
+   color: #413d34 ;
+   /*width: 964px;*/
+   width: 360px;
+   padding: 0 64px 0 540px;
+   background-position: 0 center;
+   background-repeat: no-repeat;
+   position: absolute;
+   left: 50%;
+   margin: 0 -482px;
+   top: 0;
+   height: 550px;
+   *font-size: 400px;
+   line-height: 550px;
+}
+.slider_item .item_inner{
+   display: inline-block;
+   *display: inline;
+   *zoom:1;
+   font-size: 16px;
+   line-height: 19px;
+   vertical-align: middle;
+}
+.product_slider .slider_item em{
+   font-family: Georgia,"Times New Roman", serif;
+   display: block;
+   margin: 0 0 3px;
+   font-size: 18px;
+}
+.product_slider .slider_item .h1{color: #413d34 }
+.product_slider .slider_item .hr{width: 227px;margin: 18px 0 20px; height:1px; display:block; background: #726947;}
+.product_slider .slider_item p{
+   margin: 0;
+   font-size: 16px;
+   line-height: 18px;
+}
+.product_slider .slider_item.right{padding: 0 540px 0 64px;background-position: right center}
+.toggle_holder{
+   position: absolute;
+   left: 0;
+   bottom: 46px;
+   width: 100%;
+   text-align: center;
+   font-size: 0;
+   line-height: 0;
+   z-index: 10;
+}
+.toggle{
+   display: inline-block;
+   *display: inline;
+   *zoom:1;
+   vertical-align: top;
+   width: 15px;
+   height: 15px;
+   background: url({{ 'sprite.png' | asset_url }}) no-repeat -45px 0;
+   cursor: pointer;
+}
+.toggle:hover,
+.toggle.act{background-position: -45px -15px}
+.toggle.act{cursor: default}
+
+</style>
+{% if section.blocks.size > 0 %}
+  <div class="product_slider">
+       <div class="slider_holder">
+          {% for block in section.blocks %} 
+           <div class="slider_item" style="background-image: url({{ block.settings.image | img_url: '480x' }});">
+              
+               <div class="item_inner">
+                   <em>{{ block.settings.sequence }}</em>
+                   <h2 class="h1">{{ block.settings.title }}</h2>
+                   <i class="hr"></i>
+                   <p>{{ block.settings.subtitle }}</p>
+               </div>
+           </div>
+          {% endfor %} 
+           
+                   </div>
+       <i class="toggle_holder">
+           
+           <i class="toggle"></i>
+           
+           <i class="toggle"></i>
+           
+           <i class="toggle"></i>
+           
+           <i class="toggle"></i>
+           
+           <i class="toggle act"></i>
+                   </i>
+       <i class="icon arrow left"></i>
+       <i class="icon arrow right"></i>
+</div>
+
 {% endif %}
 
 {% schema %}
@@ -140,6 +773,11 @@
           "type": "image_picker",
           "id": "image",
           "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "sequence",
+          "label": "Sequence"
         },
         {
           "type": "text",
