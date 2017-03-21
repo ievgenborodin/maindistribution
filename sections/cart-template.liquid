@@ -165,6 +165,9 @@
         {{ content_for_additional_checkout_buttons | google_button_options: 'transparent' }}
 
       </div>
+      <style>
+        .additional-checkout-button+.additional-checkout-button { margin-left: 0;}
+      </style>
     </form>
   </div>
 {% endif %}

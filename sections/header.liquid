@@ -11,6 +11,15 @@
   </div>
 {% endif %}
 
+<style>
+.logo-addon-title { display: block;
+    white-space: nowrap;
+    font-size: 19px;
+    font-family: fantasy;
+    font-weight: 900;
+    margin-top: -12px; }
+</style>
+
 <div class="header {% unless template contains "index" %}header_border{% else %}homepage{% endunless %}">
   <div class="container content">
     <div class="sixteen columns">
@@ -21,6 +30,7 @@
         {% else %}
           {{ shop.name }}
         {% endif %}
+        <span class="logo-addon-title">{{ section.settings.logo_addon_title }}</span>
       </a>
     </div>
 
@@ -203,6 +213,11 @@
       "label": "Logo display width",
       "info": "Maximum display width is 280 pixels",
       "default": "280"
+    },
+    {
+      "type": "text",
+      "id": "logo_addon_title",
+      "label": "Store Title"
     },
     {
       "type": "select",

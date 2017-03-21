@@ -8,7 +8,7 @@
       {% endif %}
     </div>
 
-    <div class="three columns">
+    <div class="two columns">
       <h6>{{ linklists[section.settings.footer_linklist_1].title }}</h6>
       <ul class="footer_menu">
         {% for link in linklists[section.settings.footer_linklist_1].links %}
@@ -17,20 +17,16 @@
       </ul>
     </div>
 
-    <div class="three columns">
-      <h6>{{ linklists[section.settings.footer_linklist_2].title }}</h6>
-      <ul class="footer_menu">
-        {% for link in linklists[section.settings.footer_linklist_2].links %}
-          <li><a href="{{ link.url }}" title="{{ link.title }}">{{ link.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="three columns">
+    <div class="two columns">
       {% if section.settings.footer_social_icons %}
         <h6 class="social">{{ 'layout.general.social' | t }}</h6>
         {% include 'social-icons' %}
       {% endif %}
+    </div>
+    
+    <div class="five columns">
+      <h6>Customer Service</h6>
+      <h2 class="contact-phone-number">{{ section.settings.contact_phone }}</h2>
     </div>
 
     <div class="sixteen columns">
@@ -103,6 +99,11 @@
       "id": "footer_newsletter",
       "label": "Show footer newsletter form",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Customer service phone number"
     },
     {
       "type": "checkbox",

@@ -369,10 +369,8 @@ abbr {
 
 /* #Menu
 ================================================== */
-#shopify-section-header { position:absolute; top:0; left:0; width: 100%; z-index: 999; }
 .header {
-  background: none;
-/*  background-color: {{ settings.header_bg_color }};*/
+  background-color: {{ settings.header_bg_color }};
 }
 .header_border {
   border-bottom: solid 1px {{ settings.border_color }};
@@ -664,9 +662,10 @@ ul.top_menu li a:hover {
   color: {{ settings.regular_color}};
 }
 
-.collection_menu li a span.active, .sidebar li.active a, ul.blog_list a.active, ul.blog_list a.active--default {
-  color: {{ settings.nav_color }};
+.collection_menu li a span.active, ul.blog_list a.active, ul.blog_list a.active--default {
+  color: #5c0218; /*color: {{ settings.nav_color }};*/
 }
+.sidebar li.active a { color: #5c0218; }
 
 .collection_menu a li a:hover, .collection_menu li span.active:hover, .sidebar a:hover {
   color: {{ settings.nav_color_hover }};
@@ -2479,6 +2478,7 @@ div#gift-card-outer-container { background-color: #eee; }
   }
   .section_select {
     float: right;
+    min-width: 170px;
     text-align: right;
     margin-left: 15px;
 
@@ -4589,3 +4589,29 @@ Copyright (c) 2013 Daniel Eden
 
 /* #Custom Styles
 ================================================== */
+
+.index {
+
+  #shopify-section-header { 
+    position:absolute; 
+    top:0; left:0; 
+    width: 100%; 
+    z-index: 999; 
+  }
+  
+  .header {
+    background: none;
+  }
+}
+
+.twelve.columns {
+  
+  .product_image {
+
+    img { max-height: 320px; }
+  }
+
+} 
+
+.contact-phone-number { white-space:nowrap; }
+
